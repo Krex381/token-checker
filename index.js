@@ -31,13 +31,11 @@ const BADGES = {
     VERIFIED_BOT_DEV: 1n << 17n,      // 131072
     MOD_PROGRAM_ALUMNI: 1n << 18n,    // 262144
     ACTIVE_DEVELOPER: 1n << 22n,      // 4194304
-    SUPPORTS_COMMANDS: 1n << 23n,      // 8388608
-    USES_AUTOMOD: 1n << 24n,          // 16777216
-    QUEST_COMPLETED: 1n << 25n         // Add Quest Completed badge
+    QUEST_COMPLETED: 1n << 35n         // Changed to correct bit position (34359738368)
 };
 
-const getBadges = (flags) => {
-    const userFlags = BigInt(flags || 0);
+const getBadges = (flags, publicFlagsExt) => {
+    const userFlags = BigInt(flags || 0) | BigInt(publicFlagsExt || 0);
     const badges = [];
 
     if (userFlags & BADGES.DISCORD_STAFF) badges.push("Discord Çalışanı");
@@ -52,8 +50,6 @@ const getBadges = (flags) => {
     if (userFlags & BADGES.VERIFIED_BOT_DEV) badges.push("Onaylı Bot Geliştirici");
     if (userFlags & BADGES.MOD_PROGRAM_ALUMNI) badges.push("Moderatör Programı Mezunu");
     if (userFlags & BADGES.ACTIVE_DEVELOPER) badges.push("Aktif Geliştirici");
-    if (userFlags & BADGES.SUPPORTS_COMMANDS) badges.push("Komut Destekli");
-    if (userFlags & BADGES.USES_AUTOMOD) badges.push("AutoMod Kullanıyor");
     if (userFlags & BADGES.QUEST_COMPLETED) badges.push("Görev Tamamlandı");
 
     return badges.length ? badges.join(", ") : "Yok";
@@ -204,10 +200,14 @@ async function checkToken(token, index) {
             });
 
             const user = userRes.data;
+            const flagsRes = await api.get("https://discord.com/api/v9/users/@me/profile", {
+                headers: { Authorization: token }
+            }).catch(() => ({ data: { user: { public_flags_ext: 0 } } }));
+
             const nitroType = user.premium_type || 0;
             const nitroBadge = getNitroBadge(nitroType);
             const boostBadge = getBoostBadge(user.premium_since);
-            const badges = getBadges(user.public_flags);
+            const badges = getBadges(user.public_flags, flagsRes.data?.user?.public_flags_ext);
             const phoneVerified = user.phone ? "Doğrulanmış" : "Doğrulanmamış";
 
             const [guildBoosts, subscriptionsRes, paymentsRes] = await Promise.all([
@@ -227,7 +227,7 @@ async function checkToken(token, index) {
 
             const paymentMethods = paymentsRes.data.map(p => {
                 let details = "";
-                if (p.type === 1) { // Credit Card
+                if (p.type === 1) {
                     details = `${p.brand.toUpperCase()} *${p.last_4}`;
                     if (p.expires_month && p.expires_year) {
                         details += ` (${p.expires_month}/${p.expires_year})`;
