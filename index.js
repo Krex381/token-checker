@@ -32,7 +32,8 @@ const BADGES = {
     MOD_PROGRAM_ALUMNI: 1n << 18n,    // 262144
     ACTIVE_DEVELOPER: 1n << 22n,      // 4194304
     SUPPORTS_COMMANDS: 1n << 23n,      // 8388608
-    USES_AUTOMOD: 1n << 24n           // 16777216
+    USES_AUTOMOD: 1n << 24n,          // 16777216
+    QUEST_COMPLETED: 1n << 25n         // Add Quest Completed badge
 };
 
 const getBadges = (flags) => {
@@ -53,6 +54,7 @@ const getBadges = (flags) => {
     if (userFlags & BADGES.ACTIVE_DEVELOPER) badges.push("Aktif Geliştirici");
     if (userFlags & BADGES.SUPPORTS_COMMANDS) badges.push("Komut Destekli");
     if (userFlags & BADGES.USES_AUTOMOD) badges.push("AutoMod Kullanıyor");
+    if (userFlags & BADGES.QUEST_COMPLETED) badges.push("Görev Tamamlandı");
 
     return badges.length ? badges.join(", ") : "Yok";
 };
@@ -172,6 +174,16 @@ const formatCreationDate = (timestamp) => {
     return `${fullDate} (${age.trim()} ago)`;
 };
 
+const PAYMENT_TYPES = {
+    1: "Kredi Kartı",
+    2: "PayPal",
+    3: "Paysafecard",
+    4: "YouTube",
+    8: "Operatör",
+    9: "Sunucu Aboneliği",
+    13: "Apple Store"
+};
+
 async function checkToken(token, index) {
     let attempts = 0;
     
@@ -196,8 +208,12 @@ async function checkToken(token, index) {
             const nitroBadge = getNitroBadge(nitroType);
             const boostBadge = getBoostBadge(user.premium_since);
             const badges = getBadges(user.public_flags);
+            const phoneVerified = user.phone ? "Doğrulanmış" : "Doğrulanmamış";
 
-            const [subscriptionsRes, paymentsRes] = await Promise.all([
+            const [guildBoosts, subscriptionsRes, paymentsRes] = await Promise.all([
+                api.get("https://discord.com/api/v9/users/@me/guilds/premium/subscription-slots", {
+                    headers: { Authorization: token }
+                }).catch(() => ({ data: [] })),
                 api.get("https://discord.com/api/v9/users/@me/billing/subscriptions", {
                     headers: { Authorization: token }
                 }),
@@ -206,20 +222,34 @@ async function checkToken(token, index) {
                 })
             ]);
 
-            const boosts = subscriptionsRes.data
-                .filter(sub => sub.plan_id === "511651885459963904")
-                .length;
-            
-            const paymentMethods = paymentsRes.data
-                .map(p => `${p.type} (${p.invalid ? 'Geçersiz' : 'Geçerli'})`)
-                .join(", ") || "Yok";
+            const activeBoosts = guildBoosts.data.filter(slot => slot.premium_guild_subscription).length;
+            const totalBoosts = guildBoosts.data.length;
+
+            const paymentMethods = paymentsRes.data.map(p => {
+                let details = "";
+                if (p.type === 1) { // Credit Card
+                    details = `${p.brand.toUpperCase()} *${p.last_4}`;
+                    if (p.expires_month && p.expires_year) {
+                        details += ` (${p.expires_month}/${p.expires_year})`;
+                    }
+                    if (p.billing_address?.country) {
+                        details += ` - ${p.billing_address.country}`;
+                    }
+                } else {
+                    details = PAYMENT_TYPES[p.type] || `Bilinmeyen (${p.type})`;
+                }
+                
+                const status = p.invalid ? 'Geçersiz' : p.deleted_at ? 'Silinmiş' : 'Geçerli';
+                return `${details} [${status}]`;
+            }).join(", ") || "Yok";
 
             const output = [
                 `${format.progress(index + 1, tokens.length)} ${format.highlight("GEÇERLİ TOKEN")}`,
                 `${format.info("Kullanıcı:")} ${user.username}#${user.discriminator} (${user.id})`,
                 `${format.info("E-posta:")} ${user.email} [${user.verified ? "Doğrulanmış" : "Doğrulanmamış"}]`,
+                `${format.info("Telefon:")} ${user.phone || "Yok"} [${phoneVerified}]`,
                 `${format.info("Nitro:")} ${nitroBadge || "Yok"} ${boostBadge ? `| ${format.info("Boost Rozeti:")} ${boostBadge}` : ""} | ${format.info("Rozetler:")} ${badges}`,
-                `${format.info("Boost:")} ${boosts} | ${format.info("Ödemeler:")} ${paymentMethods}`,
+                `${format.info("Boost:")} ${activeBoosts} aktif boost, ${totalBoosts} toplam boost | ${format.info("Ödemeler:")} ${paymentMethods}`,
                 `${format.info("Oluşturulma:")} ${formatCreationDate(new Date(user.id / 4194304 + 1420070400000))}`,
                 `${format.info("Token:")} ${token}`,
                 chalk.gray("=".repeat(80))
@@ -227,8 +257,8 @@ async function checkToken(token, index) {
 
             STATS.valid++;
             if (nitroType > 0) STATS.nitro++;
-            if (boosts > 0) STATS.boosts += boosts;
-            if (paymentMethods !== "Yok") STATS.payments++;
+            if (totalBoosts > 0) STATS.boosts += totalBoosts;
+            if (paymentsRes.data.length > 0) STATS.payments += paymentsRes.data.length;
 
             saveValidToken(token);
             clearLine();
