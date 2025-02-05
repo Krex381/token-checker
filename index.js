@@ -79,6 +79,49 @@ const getBoostBadge = (premiumSince) => {
     return "1 Aylık Booster";
 };
 
+const getNitroRemaining = (subscriptions) => {
+    if (!subscriptions || !subscriptions.length) return null;
+    
+    const nitroSub = subscriptions.find(sub => 
+        sub.type === 2 || // Discord Nitro
+        sub.type === 1 || // Classic
+        sub.type === 3    // Basic
+    );
+
+    if (!nitroSub) return null;
+
+    try {
+        let endDate;
+        if (nitroSub.trial_ends_at) {
+            endDate = new Date(nitroSub.trial_ends_at);
+            const now = new Date();
+            const diff = endDate - now;
+
+            if (diff <= 0) return "Deneme Süresi Bitti";
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            return `Deneme: ${days} Gün ${hours} Saat ${minutes} Dakika`;
+        }
+
+        endDate = new Date(nitroSub.current_period_end || nitroSub.ends_at);
+        const now = new Date();
+        const diff = endDate - now;
+
+        if (diff <= 0) return "Sona Ermiş";
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        return `${days} Gün ${hours} Saat ${minutes} Dakika`;
+    } catch (error) {
+        return "Hesaplanamadı";
+    }
+};
+
 const STATS = {
     checked: 0,
     valid: 0,
@@ -125,7 +168,20 @@ const format = {
     error: (text) => chalk.red.bold(text),
     warning: (text) => chalk.yellow.bold(text),
     info: (text) => chalk.cyan.bold(text),
-    highlight: (text) => chalk.magenta.bold(text)
+    highlight: (text) => chalk.magenta.bold(text),
+    neptune: (text) => chalk.blue.bold(`[Neptune Developments] ${text}`)
+};
+
+const showBanner = () => {
+    console.log(chalk.blue.bold(`
+    ███╗   ██╗███████╗██████╗ ████████╗██╗   ██╗███╗   ██╗███████╗
+    ████╗  ██║██╔════╝██╔══██╗╚══██╔══╝██║   ██║████╗  ██║██╔════╝
+    ██╔██╗ ██║█████╗  ██████╔╝   ██║   ██║   ██║██╔██╗ ██║█████╗  
+    ██║╚██╗██║██╔══╝  ██╔═══╝    ██║   ██║   ██║██║╚██╗██║██╔══╝  
+    ██║ ╚████║███████╗██║        ██║   ╚██████╔╝██║ ╚████║███████╗
+    ╚═╝  ╚═══╝╚══════╝╚═╝        ╚═╝    ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+    `));
+    console.log(chalk.blue.bold(`                   Development Token Kontrol v1.0.0\n`));
 };
 
 const saveValidToken = (token) => {
@@ -188,7 +244,7 @@ async function checkToken(token, index) {
 
             if (!token || token.length < 50) {
                 clearLine();
-                process.stdout.write(`${format.progress(index + 1, tokens.length)} ${format.error("GEÇERSİZ UZUNLUK")}: ${token}\n`);
+                process.stdout.write(format.neptune(`${format.progress(index + 1, tokens.length)} ${format.error("GEÇERSİZ UZUNLUK")}: ${token}\n`));
                 STATS.invalid++;
                 return;
             }
@@ -243,15 +299,19 @@ async function checkToken(token, index) {
                 return `${details} [${status}]`;
             }).join(", ") || "Yok";
 
+            const nitroRemaining = getNitroRemaining(subscriptionsRes.data);
+    
             const output = [
-                `${format.progress(index + 1, tokens.length)} ${format.highlight("GEÇERLİ TOKEN")}`,
-                `${format.info("Kullanıcı:")} ${user.username}#${user.discriminator} (${user.id})`,
-                `${format.info("E-posta:")} ${user.email} [${user.verified ? "Doğrulanmış" : "Doğrulanmamış"}]`,
-                `${format.info("Telefon:")} ${user.phone || "Yok"} [${phoneVerified}]`,
-                `${format.info("Nitro:")} ${nitroBadge || "Yok"} ${boostBadge ? `| ${format.info("Boost Rozeti:")} ${boostBadge}` : ""} | ${format.info("Rozetler:")} ${badges}`,
-                `${format.info("Boost:")} ${activeBoosts} aktif boost, ${totalBoosts} toplam boost | ${format.info("Ödemeler:")} ${paymentMethods}`,
-                `${format.info("Oluşturulma:")} ${formatCreationDate(new Date(user.id / 4194304 + 1420070400000))}`,
-                `${format.info("Token:")} ${token}`,
+                `${format.neptune(format.progress(index + 1, tokens.length))}`,
+                format.neptune(`${format.info(format.highlight("GEÇERLİ TOKEN"))}`),
+                format.neptune(`${format.info("Kullanıcı:")} ${user.username}#${user.discriminator} (${user.id})`),
+                format.neptune(`${format.info("E-posta:")} ${user.email} [${user.verified ? "Doğrulanmış" : "Doğrulanmamış"}]`),
+                format.neptune(`${format.info("Telefon:")} ${user.phone || "Yok"} [${phoneVerified}]`),
+                format.neptune(`${format.info("Nitro:")} ${nitroBadge || "Yok"} ${boostBadge ? `| ${format.info("Boost Rozeti:")} ${boostBadge}` : ""} | ${format.info("Rozetler:")} ${badges}`),
+                format.neptune(`${format.info("Kalan Nitro Süresi:")} ${nitroRemaining || "Yok"}`),
+                format.neptune(`${format.info("Boost:")} ${activeBoosts} aktif boost, ${totalBoosts} toplam boost | ${format.info("Ödemeler:")} ${paymentMethods}`),
+                format.neptune(`${format.info("Oluşturulma:")} ${formatCreationDate(new Date(user.id / 4194304 + 1420070400000))}`),
+                format.neptune(`${format.info("Token:")} ${token}`),
                 chalk.gray("=".repeat(80))
             ].join("\n");
 
@@ -277,7 +337,7 @@ async function checkToken(token, index) {
                 
                 if (error.response.status === 401 || error.response.status === 403) {
                     clearLine();
-                    process.stdout.write(`${format.progress(index + 1, tokens.length)} ${format.error("GEÇERSİZ TOKEN")}: ${token}\n`);
+                    process.stdout.write(format.neptune(`${format.progress(index + 1, tokens.length)} ${format.error("GEÇERSİZ TOKEN")}: ${token}\n`));
                     STATS.invalid++;
                     return;
                 }
@@ -314,8 +374,9 @@ const getNextIndex = async () => {
 };
 
 (async () => {
+    showBanner();
     const threadCount = await promptThreadCount();
-    console.log(format.info(`${tokens.length} token kontrolü ${threadCount} thread ile başlatılıyor...`));
+    console.log(format.neptune(`${tokens.length} token kontrolü ${threadCount} thread ile başlatılıyor...`));
     
     await Promise.all([...Array(threadCount)].map(async () => {
         while (THREAD_STATE.currentIndex < tokens.length) {
@@ -332,13 +393,13 @@ const getNextIndex = async () => {
     const minutes = Math.floor(duration / 60000);
     const seconds = ((duration % 60000) / 1000).toFixed(0);
 
-    console.log(chalk.green("\nKontrol tamamlandı! İstatistikler:"));
-    console.log(chalk.cyan(`• Geçerli token: ${STATS.valid}`));
-    console.log(chalk.cyan(`• Nitro hesapları: ${STATS.nitro}`));
-    console.log(chalk.cyan(`• Toplam boost: ${STATS.boosts}`));
-    console.log(chalk.cyan(`• Bulunan ödeme yöntemleri: ${STATS.payments}`));
-    console.log(chalk.yellow(`• Süre: ${minutes}d ${seconds}s`));
-    console.log(chalk.yellow(`• Kullanılan thread: ${threadCount}`));
+    console.log(chalk.blue.bold("\n[Neptune Developments] Kontrol tamamlandı! İstatistikler:"));
+    console.log(format.neptune(`• Geçerli token: ${STATS.valid}`));
+    console.log(format.neptune(`• Nitro hesapları: ${STATS.nitro}`));
+    console.log(format.neptune(`• Toplam boost: ${STATS.boosts}`));
+    console.log(format.neptune(`• Bulunan ödeme yöntemleri: ${STATS.payments}`));
+    console.log(format.neptune(`• Süre: ${minutes}d ${seconds}s`));
+    console.log(format.neptune(`• Kullanılan thread: ${threadCount}`));
     
     rl.close();
     process.exit(0);
