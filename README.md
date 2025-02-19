@@ -1,104 +1,104 @@
-# Discord Token Kontrol Aracı 🚀
+# 🚀 Discord Token Checker Tool  
 
-## 🔍 Özellikler
+## 🔍 Features  
 
-- **Çoklu İş Parçacığı Desteği**: 1-100 arası thread ile hızlı kontrol
-- **Kapsamlı Token Analizi**:
-  - Hesap Detayları
-  - Nitro Durumu ve Geçmişi
-  - Boost Durumu ve Rozetleri
-  - Ödeme Yöntemleri
-  - Hesap Rozetleri
-  - Oluşturulma Tarihi
+- **Multi-Threading Support**: Fast token checking with 1-100 threads  
+- **Comprehensive Token Analysis**:  
+  - Account Details  
+  - Nitro Status & History  
+  - Boost Status & Badges  
+  - Payment Methods  
+  - Account Badges  
+  - Creation Date  
 
-## 📋 Gereksinimler
+## 📋 Requirements  
 
-- Node.js (v14 veya üzeri)
-- NPM (Node Package Manager)
-- İnternet Bağlantısı
+- Node.js (v14 or later)  
+- NPM (Node Package Manager)  
+- Internet Connection  
 
-## 🚀 Kurulum
+## 🚀 Installation  
 
-1. Repoyu klonlayın veya indirin:
+1. Clone or download the repository:  
 ```bash
 git clone https://github.com/Krex381/token-checker.git
 cd token-checker
 ```
 
-2. Gerekli paketleri yükleyin:
+2. Install dependencies:  
 ```bash
 npm install
 ```
 
-3. `tokens.txt` dosyasını oluşturun ve tokenlerinizi her satıra bir tane gelecek şekilde ekleyin.
+3. Create a `tokens.txt` file and add your tokens, one per line.  
 
-## 💻 Kullanım
+## 💻 Usage  
 
-Programı başlatmak için:
+To start the program:  
 ```bash
 node index.js
 ```
 
-## ⚙️ Yapılandırma
+## ⚙️ Configuration  
 
-`CONFIG` objesi üzerinden aşağıdaki ayarları özelleştirebilirsiniz:
+You can customize the following settings in the `CONFIG` object:  
 
 ```javascript
 {
-    retryLimit: 3,        // Başarısız denemeler için tekrar limiti
-    requestDelay: 1500,   // İstekler arası bekleme süresi (ms)
-    timeout: 5000,        // İstek zaman aşımı süresi (ms)
-    saveValid: true       // Geçerli tokenleri kaydetme
+    retryLimit: 3,        // Retry limit for failed attempts
+    requestDelay: 1500,   // Delay between requests (ms)
+    timeout: 5000,        // Request timeout (ms)
+    saveValid: true       // Save valid tokens
 }
 ```
 
-## 📊 Çıktı Detayları
+## 📊 Output Details  
 
-Her token için aşağıdaki bilgiler kontrol edilir:
+For each token, the following details are checked:  
 
-- 👤 Kullanıcı Bilgileri
-  - Kullanıcı Adı ve ID
-  - E-posta ve Doğrulama Durumu
-  
-- 🎮 Discord Özellikleri
-  - Nitro Üyeliği
-  - Boost Durumu
-  - Hesap Rozetleri
-  
-- 💳 Ödeme Bilgileri
-  - Kayıtlı Ödeme Yöntemleri
-  - Ödeme Durumları
+- 👤 **User Information**  
+  - Username & ID  
+  - Email & Verification Status  
 
-## ⚠️ Güvenlik Uyarıları
+- 🎮 **Discord Features**  
+  - Nitro Membership  
+  - Boost Status  
+  - Account Badges  
 
-- Token'larınızı güvenli bir şekilde saklayın
-- Rate limit'lere dikkat edin
-- Çok yüksek thread sayıları kullanmaktan kaçının
+- 💳 **Payment Information**  
+  - Registered Payment Methods  
+  - Payment Status  
 
-## 📝 Çıktı Örnekleri
+## ⚠️ Security Warnings  
+
+- Keep your tokens secure  
+- Be mindful of rate limits  
+- Avoid using too many threads at once  
+
+## 📝 Example Output  
 
 ```
-[01/50] GEÇERLİ TOKEN
-Kullanıcı: örnek#0000 (123456789)
-E-posta: ornek@mail.com [Doğrulanmış]
-Nitro: Nitro | Boost Rozeti: 1 Aylık Booster | Rozetler: Early Supporter
-Boost: 1 | Ödemeler: Credit Card (Geçerli)
-Oluşturulma: Jan 1, 2024 (30d 5h ago)
+[01/50] VALID TOKEN
+User: example#0000 (123456789)
+Email: example@mail.com [Verified]
+Nitro: Nitro | Boost Badge: 1 Month Booster | Badges: Early Supporter
+Boosts: 1 | Payments: Credit Card (Valid)
+Created: Jan 1, 2024 (30d 5h ago)
 ```
 
-## 🤝 Katkıda Bulunma
+## 🤝 Contributing  
 
-1. Fork'layın
-2. Feature branch oluşturun (`git checkout -b özellik/YeniÖzellik`)
-3. Commit'leyin (`git commit -am 'Yeni özellik eklendi'`)
-4. Branch'i push'layın (`git push origin özellik/YeniÖzellik`)
-5. Pull Request oluşturun
+1. Fork the repository  
+2. Create a feature branch (`git checkout -b feature/NewFeature`)  
+3. Commit your changes (`git commit -am 'Added a new feature'`)  
+4. Push the branch (`git push origin feature/NewFeature`)  
+5. Create a Pull Request  
 
-## 📜 Lisans
+## 📜 License  
 
-Bu proje ISC lisansı altında lisanslanmıştır.
+This project is licensed under the ISC License.  
 
-## ⭐ Geliştirici
+## ⭐ Developer  
 
-**Krex**
-- GitHub: [@Krex381](https://github.com/Krex381)
+**Krex**  
+- GitHub: [@Krex381](https://github.com/Krex381)  
