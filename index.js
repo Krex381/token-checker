@@ -38,19 +38,19 @@ const getBadges = (flags, publicFlagsExt) => {
     const userFlags = BigInt(flags || 0) | BigInt(publicFlagsExt || 0);
     const badges = [];
 
-    if (userFlags & BADGES.DISCORD_STAFF) badges.push("Discord Çalışanı");
-    if (userFlags & BADGES.PARTNER) badges.push("Partner");
-    if (userFlags & BADGES.HYPESQUAD_EVENTS) badges.push("HypeSquad Events");
-    if (userFlags & BADGES.BUG_HUNTER_1) badges.push("Bug Avcısı 1");
-    if (userFlags & BADGES.BRAVERY) badges.push("HypeSquad Bravery");
-    if (userFlags & BADGES.BRILLIANCE) badges.push("HypeSquad Brilliance");
-    if (userFlags & BADGES.BALANCE) badges.push("HypeSquad Balance");
-    if (userFlags & BADGES.EARLY_SUPPORTER) badges.push("Erken Destekçi");
-    if (userFlags & BADGES.BUG_HUNTER_2) badges.push("Bug Avcısı 2");
-    if (userFlags & BADGES.VERIFIED_BOT_DEV) badges.push("Onaylı Bot Geliştirici");
-    if (userFlags & BADGES.MOD_PROGRAM_ALUMNI) badges.push("Moderatör Programı Mezunu");
-    if (userFlags & BADGES.ACTIVE_DEVELOPER) badges.push("Aktif Geliştirici");
-    if (userFlags & BADGES.QUEST_COMPLETED) badges.push("Görev Tamamlandı");
+if (userFlags & BADGES.DISCORD_STAFF) badges.push("Discord Staff");
+if (userFlags & BADGES.PARTNER) badges.push("Partner");
+if (userFlags & BADGES.HYPESQUAD_EVENTS) badges.push("HypeSquad Events");
+if (userFlags & BADGES.BUG_HUNTER_1) badges.push("Bug Hunter 1");
+if (userFlags & BADGES.BRAVERY) badges.push("HypeSquad Bravery");
+if (userFlags & BADGES.BRILLIANCE) badges.push("HypeSquad Brilliance");
+if (userFlags & BADGES.BALANCE) badges.push("HypeSquad Balance");
+if (userFlags & BADGES.EARLY_SUPPORTER) badges.push("Early Supporter");
+if (userFlags & BADGES.BUG_HUNTER_2) badges.push("Bug Hunter 2");
+if (userFlags & BADGES.VERIFIED_BOT_DEV) badges.push("Verified Bot Developer");
+if (userFlags & BADGES.MOD_PROGRAM_ALUMNI) badges.push("Moderator Program Alumni");
+if (userFlags & BADGES.ACTIVE_DEVELOPER) badges.push("Active Developer");
+if (userFlags & BADGES.QUEST_COMPLETED) badges.push("Quest Completed");
 
     return badges.length ? badges.join(", ") : "Yok";
 };
@@ -68,15 +68,15 @@ const getBoostBadge = (premiumSince) => {
     if (!premiumSince) return null;
     const months = Math.floor((Date.now() - new Date(premiumSince).getTime()) / (1000 * 60 * 60 * 24 * 30));
     
-    if (months >= 24) return "2 Yıllık Booster";
-    if (months >= 18) return "1.5 Yıllık Booster";
-    if (months >= 15) return "1 Yıl 3 Aylık Booster";
-    if (months >= 12) return "1 Yıllık Booster";
-    if (months >= 9) return "9 Aylık Booster";
-    if (months >= 6) return "6 Aylık Booster";
-    if (months >= 3) return "3 Aylık Booster";
-    if (months >= 2) return "2 Aylık Booster";
-    return "1 Aylık Booster";
+    if (months >= 24) return "2 Year Booster";
+    if (months >= 18) return "1.5 Year Booster";
+    if (months >= 15) return "1 Year 3 Month Booster";
+    if (months >= 12) return "1 Year Booster";
+    if (months >= 9) return "9 Month Booster";
+    if (months >= 6) return "6 Month Booster";
+    if (months >= 3) return "3 Month Booster";
+    if (months >= 2) return "2 Month Booster";
+    return "1 Month Booster";
 };
 
 const getNitroRemaining = (subscriptions) => {
@@ -97,28 +97,28 @@ const getNitroRemaining = (subscriptions) => {
             const now = new Date();
             const diff = endDate - now;
 
-            if (diff <= 0) return "Deneme Süresi Bitti";
+            if (diff <= 0) return "Nitro Trial has ended";
 
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-            return `Deneme: ${days} Gün ${hours} Saat ${minutes} Dakika`;
+            return `Trial: ${days} Day ${hours} Hour ${minutes} Minute`;
         }
 
         endDate = new Date(nitroSub.current_period_end || nitroSub.ends_at);
         const now = new Date();
         const diff = endDate - now;
 
-        if (diff <= 0) return "Sona Ermiş";
+        if (diff <= 0) return "Ended";
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-        return `${days} Gün ${hours} Saat ${minutes} Dakika`;
+        return `${days} Day ${hours} Hour ${minutes} Minute`;
     } catch (error) {
-        return "Hesaplanamadı";
+        return "Ended";
     }
 };
 
@@ -169,19 +169,19 @@ const format = {
     warning: (text) => chalk.yellow.bold(text),
     info: (text) => chalk.cyan.bold(text),
     highlight: (text) => chalk.magenta.bold(text),
-    neptune: (text) => chalk.blue.bold(`[Neptune Developments] ${text}`)
+    krex: (text) => chalk.blue.bold(`[Krex Developments] ${text}`)
 };
 
 const showBanner = () => {
     console.log(chalk.blue.bold(`
-    ███╗   ██╗███████╗██████╗ ████████╗██╗   ██╗███╗   ██╗███████╗
-    ████╗  ██║██╔════╝██╔══██╗╚══██╔══╝██║   ██║████╗  ██║██╔════╝
-    ██╔██╗ ██║█████╗  ██████╔╝   ██║   ██║   ██║██╔██╗ ██║█████╗  
-    ██║╚██╗██║██╔══╝  ██╔═══╝    ██║   ██║   ██║██║╚██╗██║██╔══╝  
-    ██║ ╚████║███████╗██║        ██║   ╚██████╔╝██║ ╚████║███████╗
-    ╚═╝  ╚═══╝╚══════╝╚═╝        ╚═╝    ╚═════╝ ╚═╝  ╚═══╝╚══════╝
-    `));
-    console.log(chalk.blue.bold(`                   Development Token Kontrol v1.0.0\n`));
+                                ██╗  ██╗██████╗ ███████╗██╗  ██╗
+                                ██║ ██╔╝██╔══██╗██╔════╝╚██╗██╔╝
+                                █████╔╝ ██████╔╝█████╗   ╚███╔╝ 
+                                ██╔═██╗ ██╔══██╗██╔══╝   ██╔██╗ 
+                                ██║  ██╗██║  ██║███████╗██╔╝ ██╗
+                                ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+`));
+    console.log(chalk.blue.bold(`                                   Development Token Checker v1.0.0\n`));
 };
 
 const saveValidToken = (token) => {
@@ -227,12 +227,12 @@ const formatCreationDate = (timestamp) => {
 };
 
 const PAYMENT_TYPES = {
-    1: "Kredi Kartı",
+    1: "Credit Card",
     2: "PayPal",
     3: "Paysafecard",
     4: "YouTube",
-    8: "Operatör",
-    9: "Sunucu Aboneliği",
+    8: "Operator",
+    9: "Server Subscription",
     13: "Apple Store"
 };
 
@@ -244,7 +244,7 @@ async function checkToken(token, index) {
 
             if (!token || token.length < 50) {
                 clearLine();
-                process.stdout.write(format.neptune(`${format.progress(index + 1, tokens.length)} ${format.error("GEÇERSİZ UZUNLUK")}: ${token}\n`));
+                process.stdout.write(format.krex(`${format.progress(index + 1, tokens.length)} ${format.error("Invalid Length")}: ${token}\n`));
                 STATS.invalid++;
                 return;
             }
@@ -264,7 +264,7 @@ async function checkToken(token, index) {
             const nitroBadge = getNitroBadge(nitroType);
             const boostBadge = getBoostBadge(user.premium_since);
             const badges = getBadges(user.public_flags, flagsRes.data?.user?.public_flags_ext);
-            const phoneVerified = user.phone ? "Doğrulanmış" : "Doğrulanmamış";
+            const phoneVerified = user.phone ? "Verified" : "Not Verified";
 
             const [guildBoosts, subscriptionsRes, paymentsRes] = await Promise.all([
                 api.get("https://discord.com/api/v9/users/@me/guilds/premium/subscription-slots", {
@@ -292,28 +292,29 @@ async function checkToken(token, index) {
                         details += ` - ${p.billing_address.country}`;
                     }
                 } else {
-                    details = PAYMENT_TYPES[p.type] || `Bilinmeyen (${p.type})`;
+                    details = PAYMENT_TYPES[p.type] || `Unknown (${p.type})`;
                 }
                 
-                const status = p.invalid ? 'Geçersiz' : p.deleted_at ? 'Silinmiş' : 'Geçerli';
+                const status = p.invalid ? 'Invalid' : p.deleted_at ? 'Deleted' : 'Valid';
                 return `${details} [${status}]`;
-            }).join(", ") || "Yok";
+            }).join(", ") || "Blank";
 
             const nitroRemaining = getNitroRemaining(subscriptionsRes.data);
     
-            const output = [
-                `${format.neptune(format.progress(index + 1, tokens.length))}`,
-                format.neptune(`${format.info(format.highlight("GEÇERLİ TOKEN"))}`),
-                format.neptune(`${format.info("Kullanıcı:")} ${user.username}#${user.discriminator} (${user.id})`),
-                format.neptune(`${format.info("E-posta:")} ${user.email} [${user.verified ? "Doğrulanmış" : "Doğrulanmamış"}]`),
-                format.neptune(`${format.info("Telefon:")} ${user.phone || "Yok"} [${phoneVerified}]`),
-                format.neptune(`${format.info("Nitro:")} ${nitroBadge || "Yok"} ${boostBadge ? `| ${format.info("Boost Rozeti:")} ${boostBadge}` : ""} | ${format.info("Rozetler:")} ${badges}`),
-                format.neptune(`${format.info("Kalan Nitro Süresi:")} ${nitroRemaining || "Yok"}`),
-                format.neptune(`${format.info("Boost:")} ${activeBoosts} aktif boost, ${totalBoosts} toplam boost | ${format.info("Ödemeler:")} ${paymentMethods}`),
-                format.neptune(`${format.info("Oluşturulma:")} ${formatCreationDate(new Date(user.id / 4194304 + 1420070400000))}`),
-                format.neptune(`${format.info("Token:")} ${token}`),
-                chalk.gray("=".repeat(80))
-            ].join("\n");
+const output = [
+    `${format.krex(format.progress(index + 1, tokens.length))}`,
+    format.krex(`${format.info(format.highlight("VALID TOKEN"))}`),
+    format.krex(`${format.info("User:")} ${user.username}#${user.discriminator} (${user.id})`),
+    format.krex(`${format.info("Email:")} ${user.email} [${user.verified ? "Verified" : "Unverified"}]`),
+    format.krex(`${format.info("Phone:")} ${user.phone || "None"} [${phoneVerified}]`),
+    format.krex(`${format.info("Nitro:")} ${nitroBadge || "None"} ${boostBadge ? `| ${format.info("Boost Badge:")} ${boostBadge}` : ""} | ${format.info("Badges:")} ${badges}`),
+    format.krex(`${format.info("Remaining Nitro Time:")} ${nitroRemaining || "None"}`),
+    format.krex(`${format.info("Boost:")} ${activeBoosts} active boosts, ${totalBoosts} total boosts | ${format.info("Payments:")} ${paymentMethods}`),
+    format.krex(`${format.info("Created At:")} ${formatCreationDate(new Date(user.id / 4194304 + 1420070400000))}`),
+    format.krex(`${format.info("Token:")} ${token}`),
+    chalk.gray("=".repeat(80))
+].join("\n");
+
 
             STATS.valid++;
             if (nitroType > 0) STATS.nitro++;
@@ -337,7 +338,7 @@ async function checkToken(token, index) {
                 
                 if (error.response.status === 401 || error.response.status === 403) {
                     clearLine();
-                    process.stdout.write(format.neptune(`${format.progress(index + 1, tokens.length)} ${format.error("GEÇERSİZ TOKEN")}: ${token}\n`));
+                    process.stdout.write(format.krex(`${format.progress(index + 1, tokens.length)} ${format.error("INVALID TOKEN")}: ${token}\n`));
                     STATS.invalid++;
                     return;
                 }
@@ -351,10 +352,10 @@ async function checkToken(token, index) {
 
 const promptThreadCount = () => {
     return new Promise((resolve) => {
-        rl.question(chalk.yellow('Kaç thread kullanmak istersiniz? (1-100): '), (answer) => {
+        rl.question(chalk.yellow('Thread Count? (1-100): '), (answer) => {
             const threads = parseInt(answer);
             if (isNaN(threads) || threads < 1 || threads > 100) {
-                console.log(chalk.red('Geçersiz değer, varsayılan (1) kullanılıyor...'));
+                console.log(chalk.red('Invalid Choice, using (1)...'));
                 resolve(1);
             } else {
                 resolve(threads);
@@ -376,7 +377,7 @@ const getNextIndex = async () => {
 (async () => {
     showBanner();
     const threadCount = await promptThreadCount();
-    console.log(format.neptune(`${tokens.length} token kontrolü ${threadCount} thread ile başlatılıyor...`));
+    console.log(format.krex(`${tokens.length} checking tokens ${threadCount} thread count...`));
     
     await Promise.all([...Array(threadCount)].map(async () => {
         while (THREAD_STATE.currentIndex < tokens.length) {
@@ -393,13 +394,13 @@ const getNextIndex = async () => {
     const minutes = Math.floor(duration / 60000);
     const seconds = ((duration % 60000) / 1000).toFixed(0);
 
-    console.log(chalk.blue.bold("\n[Neptune Developments] Kontrol tamamlandı! İstatistikler:"));
-    console.log(format.neptune(`• Geçerli token: ${STATS.valid}`));
-    console.log(format.neptune(`• Nitro hesapları: ${STATS.nitro}`));
-    console.log(format.neptune(`• Toplam boost: ${STATS.boosts}`));
-    console.log(format.neptune(`• Bulunan ödeme yöntemleri: ${STATS.payments}`));
-    console.log(format.neptune(`• Süre: ${minutes}d ${seconds}s`));
-    console.log(format.neptune(`• Kullanılan thread: ${threadCount}`));
+console.log(chalk.blue.bold("\n[Krex Developments] Check completed! Statistics:"));
+console.log(format.krex(`• Valid tokens: ${STATS.valid}`));
+console.log(format.krex(`• Nitro accounts: ${STATS.nitro}`));
+console.log(format.krex(`• Total boosts: ${STATS.boosts}`));
+console.log(format.krex(`• Found payment methods: ${STATS.payments}`));
+console.log(format.krex(`• Duration: ${minutes}m ${seconds}s`));
+console.log(format.krex(`• Threads used: ${threadCount}`));
     
     rl.close();
     process.exit(0);
