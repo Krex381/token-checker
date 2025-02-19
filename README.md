@@ -101,4 +101,10 @@ This project is licensed under the ISC License.
 ## ⭐ Developer  
 
 **Krex**  
-- GitHub: [@Krex381](https://github.com/Krex381)  
+- GitHub: [@Krex381](https://github.com/Krex381)
+
+
+## 🔗 Discord
+
+**Development Server**
+- Discord Link: [Dark Coders](https://discord.gg/2UEs5WDZA2)
