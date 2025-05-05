@@ -5,11 +5,13 @@
 - **Multi-Threading Support**: Fast token checking with 1-100 threads  
 - **Comprehensive Token Analysis**:  
   - Account Details  
-  - Nitro Status & History  
-  - Boost Status & Badges  
+  - Nitro Status & Subscription Tier (Bronze, Silver, Gold, etc.)
+  - Boost Status, Available Boosts & Badges  
   - Payment Methods  
   - Account Badges  
   - Creation Date  
+- **Real-time Progress Display**: Track checking progress as it happens
+- **Smart Thread Management**: Automatically optimizes thread count based on tokens
 
 ## 📋 Requirements  
 
@@ -39,6 +41,11 @@ To start the program:
 node index.js
 ```
 
+OR simply run:
+```bash
+start.bat
+```
+
 ## ⚙️ Configuration  
 
 You can customize the following settings in the `CONFIG` object:  
@@ -59,11 +66,19 @@ For each token, the following details are checked:
 - 👤 **User Information**  
   - Username & ID  
   - Email & Verification Status  
+  - Phone Verification Status
 
 - 🎮 **Discord Features**  
-  - Nitro Membership  
-  - Boost Status  
-  - Account Badges  
+  - Nitro Membership Type (Classic, Nitro, Basic)
+  - Nitro Subscription Tier (Bronze, Silver, Gold, Platinum, Diamond, Emerald, Ruby, Opal)
+  - Boost Badge & Status
+  - Nitro Remaining Time
+  - Account Badges (HypeSquad, Early Supporter, Active Developer, etc.)
+
+- 🚀 **Boost Information**
+  - Used Boosts
+  - Available Boosts
+  - Total Boosts
 
 - 💳 **Payment Information**  
   - Registered Payment Methods  
@@ -81,10 +96,31 @@ For each token, the following details are checked:
 [01/50] VALID TOKEN
 User: example#0000 (123456789)
 Email: example@mail.com [Verified]
-Nitro: Nitro | Boost Badge: 1 Month Booster | Badges: Early Supporter
-Boosts: 1 | Payments: Credit Card (Valid)
-Created: Jan 1, 2024 (30d 5h ago)
+Phone: None [Not Verified]
+Nitro Type: Nitro
+Nitro Tier: Silver (3 Months)
+Boost Badge: Server boosting since Apr 14, 2025
+Badges: HypeSquad Bravery, Active Developer, Completed a Quest
+Remaining Nitro Time: 30 Day 5 Hour 10 Minute
+Boost: 1 used, 1 available, 2 total
+Payments: VISA *1234 (05/27) - US [Valid]
+Created At: Feb 4, 2023 (1y 3m ago)
 ```
+
+## 🔄 Nitro Subscription Tiers
+
+The tool recognizes all official Discord Nitro subscription tiers:
+
+| Title | Earned by |
+| ----- | --------- |
+| Bronze (1 Month) | Subscribing to Nitro for 1 month |
+| Silver (3 Months) | Subscribing to Nitro for 3 months |
+| Gold (6 Months) | Subscribing to Nitro for 6 months |
+| Platinum (12 Months) | Subscribing to Nitro for 12 months (1 year) |
+| Diamond (24 Months) | Subscribing to Nitro for 24 months (2 years) |
+| Emerald (36 Months) | Subscribing to Nitro for 36 months (3 years) |
+| Ruby (60 Months) | Subscribing to Nitro for 60 months (5 years) |
+| Opal (72+ Months) | Subscribing to Nitro for 72+ months (6+ years) |
 
 ## 🤝 Contributing  
 
@@ -102,9 +138,4 @@ This project is licensed under the ISC License.
 
 **Krex**  
 - GitHub: [@Krex381](https://github.com/Krex381)
-
-
-## 🔗 Discord
-
-**Development Server**
-- Discord Link: [Dark Coders](https://discord.gg/2UEs5WDZA2)
+- Discord: [@krexdll](https://discord.com/users/1012249571436548136)

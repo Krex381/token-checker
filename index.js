@@ -64,6 +64,20 @@ const getNitroBadge = (premiumType) => {
     }
 };
 
+const getNitroTier = (premiumSince) => {
+    if (!premiumSince) return null;
+    const months = Math.floor((Date.now() - new Date(premiumSince).getTime()) / (1000 * 60 * 60 * 24 * 30));
+    
+    if (months >= 72) return "Opal (72+ Months)";
+    if (months >= 60) return "Ruby (60 Months)";
+    if (months >= 36) return "Emerald (36 Months)";
+    if (months >= 24) return "Diamond (24 Months)";
+    if (months >= 12) return "Platinum (12 Months)";
+    if (months >= 6) return "Gold (6 Months)";
+    if (months >= 3) return "Silver (3 Months)";
+    return "Bronze (1 Month)";
+};
+
 const getBoostBadge = (premiumSince) => {
     if (!premiumSince) return null;
     const months = Math.floor((Date.now() - new Date(premiumSince).getTime()) / (1000 * 60 * 60 * 24 * 30));
@@ -256,14 +270,74 @@ async function checkToken(token, index) {
             });
 
             const user = userRes.data;
-            const flagsRes = await api.get("https://discord.com/api/v9/users/@me/profile", {
+            
+            // Get detailed profile data from the new API endpoint
+            const profileData = await api.get(`https://discord.com/api/v9/users/${user.id}/profile?with_mutual_guilds=false&with_mutual_friends=false&with_mutual_friends_count=false`, {
                 headers: { Authorization: token }
-            }).catch(() => ({ data: { user: { public_flags_ext: 0 } } }));
+            }).catch(() => ({ data: { user: { public_flags_ext: 0 }, badges: [] } }));
 
+            // Extract relevant information from profile data
             const nitroType = user.premium_type || 0;
             const nitroBadge = getNitroBadge(nitroType);
-            const boostBadge = getBoostBadge(user.premium_since);
-            const badges = getBadges(user.public_flags, flagsRes.data?.user?.public_flags_ext);
+            
+            // Get premium info
+            const premiumSince = profileData.data.premium_since || user.premium_since;
+            
+            // Get boost badge from the profile data
+            let boostBadge = "None";
+            if (profileData.data.badges) {
+                const boostBadgeData = profileData.data.badges.find(badge => badge.id.startsWith('guild_booster_'));
+                if (boostBadgeData) {
+                    boostBadge = boostBadgeData.description;
+                }
+            }
+
+            // Debug log the badge data
+            // console.log("Profile data badges:", JSON.stringify(profileData.data.badges, null, 2));
+
+            // Get premium badge directly from the profile data
+            let nitroTier = "None";
+            if (profileData.data.badges && profileData.data.badges.length > 0) {
+                // First, try to find a premium badge
+                const premiumBadgeData = profileData.data.badges.find(badge => 
+                    badge.id.startsWith('premium_tenure_') || 
+                    (badge.description && badge.description.includes("months:"))
+                );
+
+                if (premiumBadgeData) {
+                    // Try to extract the tier directly from the description
+                    const tierMatch = premiumBadgeData.description.match(/(\d+)\s*months?:\s*(\w+)/i);
+                    if (tierMatch) {
+                        const months = tierMatch[1];
+                        const tier = tierMatch[2];
+                        nitroTier = `${tier} (${months} Months)`;
+                    } else {
+                        // If we can't extract the specific format, use the full description
+                        nitroTier = premiumBadgeData.description;
+                        
+                        // Try to clean up the description if it contains an "Earned" prefix
+                        if (nitroTier.includes("Earned")) {
+                            nitroTier = nitroTier.replace(/Earned.*?\.\s*/i, '');
+                        }
+                    }
+                }
+                
+                // If we still don't have a tier but user has Nitro
+                if (nitroTier === "None" && nitroType > 0 && premiumSince) {
+                    // Fall back to calculation based on premium_since
+                    nitroTier = getNitroTier(premiumSince);
+                }
+            }
+
+            // Format badges from profile data
+            let badgesList = "None";
+            if (profileData.data.badges && profileData.data.badges.length > 0) {
+                badgesList = profileData.data.badges
+                    .filter(badge => !badge.id.startsWith('guild_booster_') && !badge.id.startsWith('premium_tenure_'))
+                    .map(badge => badge.description)
+                    .join(", ");
+            }
+            
             const phoneVerified = user.phone ? "Verified" : "Not Verified";
 
             const [guildBoosts, subscriptionsRes, paymentsRes] = await Promise.all([
@@ -280,6 +354,7 @@ async function checkToken(token, index) {
 
             const activeBoosts = guildBoosts.data.filter(slot => slot.premium_guild_subscription).length;
             const totalBoosts = guildBoosts.data.length;
+            const availableBoosts = totalBoosts - activeBoosts;
 
             const paymentMethods = paymentsRes.data.map(p => {
                 let details = "";
@@ -307,14 +382,17 @@ const output = [
     format.krex(`${format.info("User:")} ${user.username}#${user.discriminator} (${user.id})`),
     format.krex(`${format.info("Email:")} ${user.email} [${user.verified ? "Verified" : "Unverified"}]`),
     format.krex(`${format.info("Phone:")} ${user.phone || "None"} [${phoneVerified}]`),
-    format.krex(`${format.info("Nitro:")} ${nitroBadge || "None"} ${boostBadge ? `| ${format.info("Boost Badge:")} ${boostBadge}` : ""} | ${format.info("Badges:")} ${badges}`),
+    format.krex(`${format.info("Nitro Type:")} ${nitroBadge || "None"}`),
+    format.krex(`${format.info("Nitro Tier:")} ${nitroTier}`),
+    format.krex(`${format.info("Boost Badge:")} ${boostBadge || "None"}`),
+    format.krex(`${format.info("Badges:")} ${badgesList}`),
     format.krex(`${format.info("Remaining Nitro Time:")} ${nitroRemaining || "None"}`),
-    format.krex(`${format.info("Boost:")} ${activeBoosts} active boosts, ${totalBoosts} total boosts | ${format.info("Payments:")} ${paymentMethods}`),
+    format.krex(`${format.info("Boost:")} ${activeBoosts} used, ${availableBoosts} available, ${totalBoosts} total`),
+    format.krex(`${format.info("Payments:")} ${paymentMethods}`),
     format.krex(`${format.info("Created At:")} ${formatCreationDate(new Date(user.id / 4194304 + 1420070400000))}`),
     format.krex(`${format.info("Token:")} ${token}`),
     chalk.gray("=".repeat(80))
 ].join("\n");
-
 
             STATS.valid++;
             if (nitroType > 0) STATS.nitro++;
@@ -377,30 +455,57 @@ const getNextIndex = async () => {
 (async () => {
     showBanner();
     const threadCount = await promptThreadCount();
-    console.log(format.krex(`${tokens.length} checking tokens ${threadCount} thread count...`));
     
-    await Promise.all([...Array(threadCount)].map(async () => {
-        while (THREAD_STATE.currentIndex < tokens.length) {
-            const index = await getNextIndex();
-            if (index < tokens.length) {
-                await checkToken(tokens[index], index);
-                STATS.checked++;
-                await sleep(CONFIG.requestDelay / threadCount);
+    // Make sure we don't use more threads than tokens
+    const effectiveThreadCount = Math.min(threadCount, tokens.length);
+    
+    console.log(format.krex(`${tokens.length} checking tokens ${effectiveThreadCount} thread count...`));
+    
+    if (tokens.length === 0) {
+        console.log(format.krex(`${format.error("No tokens found")} in tokens.txt. Please add some tokens and try again.`));
+        rl.close();
+        process.exit(0);
+        return;
+    }
+    
+    // Set up progress display
+    let progressInterval = setInterval(() => {
+        clearLine();
+        process.stdout.write(format.krex(`Progress: ${STATS.checked}/${tokens.length} (${Math.floor(STATS.checked/tokens.length*100)}%) - Valid: ${STATS.valid}, Invalid: ${STATS.invalid}\r`));
+    }, 1000);
+    
+    try {
+        await Promise.all([...Array(effectiveThreadCount)].map(async (_, threadIndex) => {
+            while (THREAD_STATE.currentIndex < tokens.length) {
+                const index = await getNextIndex();
+                if (index < tokens.length) {
+                    try {
+                        await checkToken(tokens[index], index);
+                    } catch (error) {
+                        console.error(`Thread ${threadIndex} error:`, error.message);
+                    }
+                    STATS.checked++;
+                    await sleep(CONFIG.requestDelay / effectiveThreadCount);
+                }
             }
-        }
-    }));
+        }));
+    } catch (error) {
+        console.error("An error occurred:", error.message);
+    } finally {
+        clearInterval(progressInterval);
+    }
 
     const duration = Date.now() - STATS.startTime;
     const minutes = Math.floor(duration / 60000);
     const seconds = ((duration % 60000) / 1000).toFixed(0);
 
-console.log(chalk.blue.bold("\n[Krex Developments] Check completed! Statistics:"));
-console.log(format.krex(`• Valid tokens: ${STATS.valid}`));
-console.log(format.krex(`• Nitro accounts: ${STATS.nitro}`));
-console.log(format.krex(`• Total boosts: ${STATS.boosts}`));
-console.log(format.krex(`• Found payment methods: ${STATS.payments}`));
-console.log(format.krex(`• Duration: ${minutes}m ${seconds}s`));
-console.log(format.krex(`• Threads used: ${threadCount}`));
+    console.log(chalk.blue.bold("\n[Krex Developments] Check completed! Statistics:"));
+    console.log(format.krex(`• Valid tokens: ${STATS.valid}`));
+    console.log(format.krex(`• Nitro accounts: ${STATS.nitro}`));
+    console.log(format.krex(`• Total boosts: ${STATS.boosts}`));
+    console.log(format.krex(`• Found payment methods: ${STATS.payments}`));
+    console.log(format.krex(`• Duration: ${minutes}m ${seconds}s`));
+    console.log(format.krex(`• Threads used: ${effectiveThreadCount}`));
     
     rl.close();
     process.exit(0);
