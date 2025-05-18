@@ -271,19 +271,15 @@ async function checkToken(token, index) {
 
             const user = userRes.data;
             
-            // Get detailed profile data from the new API endpoint
             const profileData = await api.get(`https://discord.com/api/v9/users/${user.id}/profile?with_mutual_guilds=false&with_mutual_friends=false&with_mutual_friends_count=false`, {
                 headers: { Authorization: token }
             }).catch(() => ({ data: { user: { public_flags_ext: 0 }, badges: [] } }));
 
-            // Extract relevant information from profile data
             const nitroType = user.premium_type || 0;
             const nitroBadge = getNitroBadge(nitroType);
             
-            // Get premium info
             const premiumSince = profileData.data.premium_since || user.premium_since;
             
-            // Get boost badge from the profile data
             let boostBadge = "None";
             if (profileData.data.badges) {
                 const boostBadgeData = profileData.data.badges.find(badge => badge.id.startsWith('guild_booster_'));
@@ -292,44 +288,34 @@ async function checkToken(token, index) {
                 }
             }
 
-            // Debug log the badge data
-            // console.log("Profile data badges:", JSON.stringify(profileData.data.badges, null, 2));
-
-            // Get premium badge directly from the profile data
             let nitroTier = "None";
             if (profileData.data.badges && profileData.data.badges.length > 0) {
-                // First, try to find a premium badge
+
                 const premiumBadgeData = profileData.data.badges.find(badge => 
                     badge.id.startsWith('premium_tenure_') || 
                     (badge.description && badge.description.includes("months:"))
                 );
 
                 if (premiumBadgeData) {
-                    // Try to extract the tier directly from the description
                     const tierMatch = premiumBadgeData.description.match(/(\d+)\s*months?:\s*(\w+)/i);
                     if (tierMatch) {
                         const months = tierMatch[1];
                         const tier = tierMatch[2];
                         nitroTier = `${tier} (${months} Months)`;
                     } else {
-                        // If we can't extract the specific format, use the full description
                         nitroTier = premiumBadgeData.description;
                         
-                        // Try to clean up the description if it contains an "Earned" prefix
                         if (nitroTier.includes("Earned")) {
                             nitroTier = nitroTier.replace(/Earned.*?\.\s*/i, '');
                         }
                     }
                 }
                 
-                // If we still don't have a tier but user has Nitro
                 if (nitroTier === "None" && nitroType > 0 && premiumSince) {
-                    // Fall back to calculation based on premium_since
                     nitroTier = getNitroTier(premiumSince);
                 }
             }
 
-            // Format badges from profile data
             let badgesList = "None";
             if (profileData.data.badges && profileData.data.badges.length > 0) {
                 badgesList = profileData.data.badges
